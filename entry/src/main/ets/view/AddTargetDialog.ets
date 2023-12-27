@@ -47,6 +47,11 @@ export default struct AddTargetDialog{
       .height(CommonConstants.DIALOG_OPERATION_HEIGHT)
       .justifyContent(FlexAlign.SpaceBetween)
     }
+    .padding($r('app.float.dialog_padding'))
+    .height($r('app.float.dialog_height'))
+    .width(CommonConstants.DIALOG_WIDTH)
+    .borderRadius(CommonConstants.DIALOG_BORDER_RADIUS)
+    .backgroundColor(Color.White)
   }
 }
 

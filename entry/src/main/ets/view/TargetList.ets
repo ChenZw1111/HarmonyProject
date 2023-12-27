@@ -1,5 +1,6 @@
 import { CommonConstants } from '../constant/CommonConstant';
-import { TaskItemBean } from '../viewmodel/DataModel';
+import DataModel, { TaskItemBean } from '../viewmodel/DataModel';
+import TargetListItem from './TargetListItem';
 @Component
 export default struct TargetList{
   @Consume overAllProgressChanged:boolean;
@@ -62,12 +63,51 @@ export default struct TargetList{
         ForEach(this.targetData,(item:TaskItemBean,index:number) =>{
           ListItem(){
             TargetListItem({
-
+              taskItem:item,
+              index:index,
+              selectArr:$selectArray,
+              isEditMode:this.isEditMode,
+              clickIndex:$clickIndex
             })
           }
-        })
+        },(item:TaskItemBean) => JSON.stringify(item))
+      }
+      .edgeEffect(EdgeEffect.None)
+      .margin({ top: $r('app.float.list_margin_top') })
+      .width(CommonConstants.FULL_WIDTH)
+      .height(CommonConstants.LIST_HEIGHT)
+
+      Blank()
+      if(this.isEditMode){
+        Button($r('app.string.delete_button'))
+          .opacity(this.isSelectRows() ? CommonConstants.NO_OPACITY : CommonConstants.OPACITY)
+          .enabled(this.isSelectRows() ? true : false)
+          .operateButtonStyle($r('app.color.main_red'))
+          .onClick(() =>{
+            this.deleteSelected();
+            this.selectAllOrCancel(false);
+            this.selectAll = false;
+          })
+      }else{
+        Button($r('app.string.add_task'))
+          .operateButtonStyle($r('app.color.main_blue'))
+          .onClick(() =>{
+            if(this.onAddClick != undefined){
+              this.onAddClick()
+            }
+          })
       }
     }
+    .width(CommonConstants.MAIN_BOARD_WIDTH)
+    .height(CommonConstants.FULL_HEIGHT)
+    .padding({ top: $r('app.float.operate_row_margin') })
+  }
+
+  deleteSelected(){
+    DataModel.deleteData(this.selectArray);
+    this.targetData = DataModel.getData();
+    this.overAllProgressChanged = !this.overAllProgressChanged;
+    this.isEditMode = false;
   }
 
   selectAllOrCancel(selectStatus:boolean){
@@ -76,6 +116,23 @@ export default struct TargetList{
       newSelectArray.push(selectStatus);
     });
     this.selectArray = newSelectArray;
+  }
+
+  isSelectAll():boolean{
+    if(this.selectArray.length == 0){
+      return false;
+    }
+    let deSelectCount:Length = this.selectArray.filter((selected:boolean) => selected==false).length;
+    if(deSelectCount == 0){
+      this.selectAll = true;
+      return true;
+    }
+    this.selectAll = false;
+    return false;
+  }
+
+  isSelectRows():boolean{
+    return this.selectArray.filter((selected:boolean) => selected == true).length != 0;
   }
 }
 
